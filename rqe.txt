@@ -1,0 +1,44 @@
+#ignore for now, i was holding the versions for a reason
+
+landingai-ade
+pydantic
+nest-asyncio
+pandas
+numpy
+matplotlib
+python-dotenv
+
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-dotenv==1.0.1
+pydantic==2.10.3
+pydantic-settings==2.6.0
+
+# LangChain & LangGraph
+langgraph>=0.2.5
+langchain>=0.3.7
+langchain-community>=0.3.7
+langchain-chroma>=0.1.4
+langchain-huggingface>=0.1.2
+
+# Embeddings
+sentence-transformers>=3.2.0
+
+# Vector DB
+chromadb>=0.5.23
+
+# Utilities
+tiktoken>=0.8.0
+loguru>=0.7.2
+pypdf>=5.1.0   # fallback if needed
+
+# For DeepSeek & OpenAI
+openai>=1.54.0
+langchain-openai>=0.2.0
+langchain-huggingface>=0.1.2
+transformers>=4.46.0
+torch>=2.5.1
+
+# For optional Neo4j (later)
+# neo4j>=5.24.0

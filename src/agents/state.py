@@ -5,7 +5,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from src.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 class Plan(TypedDict):
     """a single sub-query plan"""

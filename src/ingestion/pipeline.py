@@ -23,7 +23,7 @@ class IngestionPipeline:
         global logger
         self.parser = ADEParser()
         self.embedder = MedicalEmbedder(settings.embedding_model)
-        self.store = VectorStoreManager(str(persist_dir=settings.chroma_persist_dir),
+        self.store = VectorStoreManager(persist_dir=str(settings.chroma_persist_dir),
                                         embedder=self.embedder)
         
     def ingest_file(self,file_path: Path, 
@@ -42,7 +42,7 @@ class IngestionPipeline:
         if not chunks:
             logger.info(f'No chunks extracted  from {file_path.name}')
             return 0
-        source_metadata = {"source": source, "original_file":file_path.anme}
+        source_metadata = {"source": source, "original_file":file_path.name}
         
         if extra_metadata:
             source_metadata.update(extra_metadata)

@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-logger = get_logger()
+logger = get_logger(__name__)
 
 class ADEParser:
     def __init__(self):
@@ -33,11 +33,18 @@ class ADEParser:
         chunks = []
 
         for chunk in response.chunks:
+            bbox = None
+
+            if chunk.grounding:
+                if hasattr(chunk.grounding,'bbox'):
+                    bbox = str(chunk.grounding.bbox)
+                elif hasattr(chunk.grounding,'box'):
+                    bbox = str(chunk.grounding.box)
             chunks.append({
                 "text":chunk.markdown,
                 "type":chunk.type,
                 "page":chunk.grounding.page if chunk.grounding else None,
-                "bbox": str(chunk.grounding.bounding_box) if chunk.grounding else None,
+                "bbox": bbox,
             })
         logger.info(f"Extracted {len(chunks)} chunks")
         return chunks

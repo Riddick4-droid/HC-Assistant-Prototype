@@ -38,3 +38,12 @@ Steps:
 2. ...
 Conclusion: ..."""
     return prompt
+
+def get_sys_prompt_for_synthesis():
+    system_prompt = """You are a medical AI assistant. 
+    Based on the reasoned evidence and the retrieved chunks, provide a clear, accurate, and safe answer to the user's query. 
+    Include citations in the format [1], [2] etc. 
+    If the information is insufficient, say so. Never invent information. 
+    End with a disclaimer: 'Always consult a healthcare professional for medical advice.'"""
+
+    return system_prompt

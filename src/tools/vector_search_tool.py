@@ -8,7 +8,7 @@ from src.ingestion.embedder import MedicalEmbedder
 from src.config import settings
 from src.logger import get_logger
 
-logger  = get_logger()
+logger  = get_logger(__name__)
 
 _store_manager = None
 _embedder = None
@@ -51,3 +51,7 @@ def get_tools_for_collections(collections: List[str])->List:
         tool_func.__doc__ = f"search the {coll} collection for medical information"
         bound_tools.append(tool_func)
     return bound_tools
+
+if __name__ == "__main__":
+    get_store()
+    logger.info('Store created successfully!')

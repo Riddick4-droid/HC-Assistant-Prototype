@@ -7,7 +7,7 @@ from src.tools.vector_search_tool import search_collection
 from src.agents.state import AgentState
 from src.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 class RetrievalAgent:
     """

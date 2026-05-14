@@ -10,9 +10,10 @@ logger = get_logger(__name__)
 class VectorStoreManager:
     """manages multiple chroma collections(there are several datasources so we need multiple collections)"""
 
-    def __init__(self,persist_dir:str,embedder):
+    def __init__(self,persist_dir:str,
+                 embedder):
         global logger
-        self.client = chromadb.PersistClient(
+        self.client = chromadb.PersistentClient(
             path = persist_dir,
             settings = ChromaSettings(anonymized_telemetry=False)
         )

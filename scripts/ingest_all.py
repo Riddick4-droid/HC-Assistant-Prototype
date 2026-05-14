@@ -6,6 +6,8 @@ from src.ingestion.pipeline import IngestionPipeline
 from src.config import settings
 from src.logger import get_logger
 
+logger = get_logger(__name__)
+
 def main():
     global logger
     pipeline = IngestionPipeline()
@@ -22,7 +24,7 @@ def main():
         
         logger.info(f"\nIngesting {pdf_path.name} as source={source}")
         pipeline.ingest_file(pdf_path,source)
-    logger("\nIngestion complete. You can now query via agent")
+    logger.info("\nIngestion complete. You can now query via agent")
 
 if __name__ == "__main__":
     main()

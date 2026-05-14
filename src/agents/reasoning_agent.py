@@ -11,7 +11,7 @@ from src.agents.state import AgentState
 from src.agents.system_prompt import get_sys_prompt_for_reasoning
 from src.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 class ReasoningAgent:
     """
@@ -19,20 +19,17 @@ class ReasoningAgent:
     Outputs reasoned evidence that will be used by the synthesis agent.
     """
     def __init__(self):
-        if os.getenv('DEEPSEEK_MODEL_ID'):
-            model_id = settings.deepseek_model_id if hasattr(settings,'deepseek_model_id') else "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
-            tokenizer = AutoTokenizer.from_pretrained(model_id)
-            model = AutoModelForCausalLM.from_pretrained(model_id,
-                                                         device_map="auto",
-                                                         torch_dtype="auto")
-            pipe = pipeline("text-generation",
-                            model=model, 
-                            tokenizer=tokenizer, 
-                            max_new_tokens=102)
-            self.llm = ChatHuggingFace(llm=HuggingFacePipeline(pipeline=pipe))
-        else:
-            from langchain_openai import ChatOpenAI
-            self.llm = ChatOpenAI(model='gpt-4o',temperature=0.2)
+        if settings.ollama_model:
+            from langchain_ollama import ChatOllama
+            self.llm = ChatOllama(
+            model = settings.ollama_model,
+            base_url = settings.ollama_base_url,
+            temperature = 0
+            )
+        #else:
+            #from langchain_openai import ChatOpenAI
+            #self.llm = ChatOpenAI(model="gpt-3.5-turbo",temperature=0)
+
         self.sys_prompt = get_sys_prompt_for_reasoning()
 
     def reason(self,query:str, chunks:list)->str:

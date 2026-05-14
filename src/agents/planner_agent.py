@@ -1,6 +1,7 @@
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_ollama import ChatOllama
 import sys
 from pathlib import Path
 import json
@@ -23,20 +24,14 @@ class PlannerAgent:
     """
     def __init__(self):
         global logger
-        if os.getenv('DEEPSEEK_MODEL_ID'):
-            from transformers import AutoModelForCausalLM,AutoTokenizer,pipeline
-            model_id = settings.deepseek_model_id if hasattr(settings,'deepseek_model_id') else "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
-            tokenizer = AutoTokenizer.from_pretrained(model_id)
-            model = AutoModelForCausalLM.from_pretrained(model_id,
-                                                         device_map="auto",
-                                                         torch_dtype="auto")
-            #define the pipeline abstraction
-            pipe = pipeline("text-generation",model=model,
-                             tokenizer=tokenizer,
-                             max_new_tokens=512)
-            self.llm = ChatHuggingFace(llm=HuggingFacePipeline(pipeline=pipe))
-        else:
-            self.llm = ChatOpenAI(model="gpt-3.5-turbo",temperature=0)
+        if settings.ollama_model:
+            self.llm = ChatOllama(
+            model = settings.ollama_model,
+            base_url = settings.ollama_base_url,
+            temperature = 0
+            )
+        #else:
+            #self.llm = ChatOpenAI(model="gpt-3.5-turbo",temperature=0)
         self.system_prompt = get_sys_prompt_for_planner()
 
     def plan(self,user_query:str)->list[Plan]:
