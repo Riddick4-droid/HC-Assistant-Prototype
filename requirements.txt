@@ -34,9 +34,11 @@ pypdf  # fallback if needed
 # For DeepSeek & OpenAI
 openai
 langchain-openai
+langchain-ollama
 langchain-huggingface
 transformers
 torch
 
 # For optional Neo4j (later)
-# neo4j>=5.24.0
+neo4j>=5.26.0
+langchain-neo4j>=0.13.0
