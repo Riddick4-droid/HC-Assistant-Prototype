@@ -1,7 +1,7 @@
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from typing import List,Dict,Any,Optional
-from src.logger import get_logger
+from ..logger import get_logger  
 import os
 import uuid
 
@@ -83,6 +83,7 @@ class VectorStoreManager:
         docs = results["documents"][0] if results["documents"] else []
         metas = results["metadatas"][0] if results["metadatas"] else []
         dists = results["distances"][0] if results["distances"] else []
-        return [{"text":d, "metadatas":m, "distance":dist} for d,m,dist in zip(docs,metas,dists)]
+        
+        return [{"text":d, "metadata":m, "distance":dist} for d,m,dist in zip(docs,metas,dists)]  
 
 

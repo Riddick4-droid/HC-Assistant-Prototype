@@ -1,15 +1,13 @@
 import os
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
+
 
 from langchain_openai import ChatOpenAI
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_core.messages import SystemMessage, HumanMessage
-from src.config import settings
-from src.agents.state import AgentState
-from src.logger import get_logger
-from src.agents.system_prompt import get_sys_prompt_for_synthesis
+from ..config import settings 
+from ..agents.state import AgentState  
+from ..logger import get_logger  
+from ..agents.system_prompt import get_sys_prompt_for_synthesis  
 
 from dotenv import load_dotenv
 
@@ -61,14 +59,30 @@ class SynthesisAgent:
             HumanMessage(content=user_prompt)
         ]
         response = self.llm.invoke(messages)
+        # FIX: Added response validation before returning
+        if not hasattr(response, 'content') or not response.content or not response.content.strip():
+            logger.error("LLM returned empty response")
+            return "I could not generate an answer. Please try again.", citations
         return response.content, citations
     def __call__(self, state: AgentState)->dict:
-        answer, citations = self.synthesize(
-            state["user_query"],
-            state["reasoned_evidence"],
-            state["retrieved_chunks"]
-        )
-        return {"final_answer": answer, "citations":citations}
+        # FIX: Added validation for required state data
+        if not state.get("retrieved_chunks"):
+            logger.warning("No retrieved chunks available for synthesis")
+            return {
+                "final_answer": "I don't have enough information to answer this question.",
+                "citations": []
+            }
+        
+        try:
+            answer, citations = self.synthesize(
+                state["user_query"],
+                state["reasoned_evidence"],
+                state["retrieved_chunks"]
+            )
+            return {"final_answer": answer, "citations":citations}
+        except Exception as e:
+            logger.error(f"Synthesis agent failed: {e}")
+            raise
     
 
 #standalone testing

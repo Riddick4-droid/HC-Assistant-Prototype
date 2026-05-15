@@ -1,9 +1,10 @@
-from typing import TypedDict, List, Dict, Any, Optional, Annotated
+from typing import (TypedDict, 
+                    List, 
+                    Dict, Any, 
+                    Optional, 
+                    Annotated)
 from langgraph.graph.message import add_messages
-from pathlib import Path
-import sys
-sys.path.append(str(Path(__file__).parent.parent))
-from src.logger import get_logger
+from ..logger import get_logger  # ✅ FIXED: Using relative imports
 
 logger = get_logger(__name__)
 
@@ -25,6 +26,7 @@ class AgentState(TypedDict):
     error: Optional[str]
     next_node: Optional[str]
     messages: Annotated[List[Dict[str,str]],add_messages]
+    graph_context: str
 
 def create_initial_state(user_query:str, session_id: Optional[str]=None)->AgentState:
     global logger
@@ -40,5 +42,6 @@ def create_initial_state(user_query:str, session_id: Optional[str]=None)->AgentS
         citations=[],
         error=None,
         next_node=None,
-        messages=[{"role": "user", "content": user_query}]
+        messages=[{"role": "user", "content": user_query}],
+        graph_context=""
     )

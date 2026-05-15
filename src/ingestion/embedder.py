@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from src.logger import get_logger
+# FIX: Using relative imports for consistency
+from ..logger import get_logger  # ✅ FIXED: Using relative imports
 from typing import List,Dict,Any
 
 logger = get_logger(__name__)

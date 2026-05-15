@@ -1,11 +1,11 @@
-import sys
+
 import os
 from pathlib import Path
 from typing import List,Dict, Any
-sys.path.append(str(Path(__file__).parent.parent))
-from src.tools.vector_search_tool import search_collection
-from src.agents.state import AgentState
-from src.logger import get_logger
+
+from ..tools.vector_search_tool import search_collection  
+from ..agents.state import AgentState  
+from ..logger import get_logger  
 
 logger = get_logger(__name__)
 
@@ -49,7 +49,7 @@ class RetrievalAgent:
             text = chunk['text']
             if text not in seen_docs:
                 seen_docs.add(text)
-                unique.extend(chunk)
+                unique.append(chunk) 
         unique.sort(key=lambda x : x['distance'],reverse=False)
         unique = unique[:10]
         return {'retrieved_chunks':unique}

@@ -1,15 +1,14 @@
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_core.messages import SystemMessage, HumanMessage
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-import sys
+
 import os
 from dotenv import load_dotenv
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-from src.config import settings
-from src.agents.state import AgentState
-from src.agents.system_prompt import get_sys_prompt_for_reasoning
-from src.logger import get_logger
+
+from ..config import settings  
+from ..agents.state import AgentState  
+from ..agents.system_prompt import get_sys_prompt_for_reasoning  
+from ..logger import get_logger  
 
 logger = get_logger(__name__)
 

@@ -1,14 +1,27 @@
 from langgraph.graph import (StateGraph, 
                              END, 
                              START)
-from src.agents.state import AgentState
-from src.agents.planner_agent import PlannerAgent
-from src.agents.synthesis_agent import SynthesisAgent
-from src.agents.reasoning_agent import ReasoningAgent
-from src.agents.retrieval_agent import RetrievalAgent
-from src.logger import get_logger
+# FIX: Using relative imports
+from ..agents.state import AgentState  
+from ..agents.planner_agent import PlannerAgent  
+from ..agents.synthesis_agent import SynthesisAgent  
+from ..agents.reasoning_agent import ReasoningAgent 
+from ..agents.retrieval_agent import RetrievalAgent  
+from ..storage.hybrid_retriever import HybridMedicalRetriever  
+from ..agents.graph_query_agent import GraphQueryAgent 
+from ..logger import get_logger  
 
 logger = get_logger(__name__)
+
+def enhanced_retrieve_node(state:AgentState)->dict:
+    retriever = HybridMedicalRetriever()
+    result  = retriever.retrieve(state["user_query"], k=5, use_graph=True)
+    return {
+        "retrieved_chunks": result["chunks"],
+        "graph_context": result["graph_context"],
+        "citations":result["citations"]  
+    }
+
 
 def build_medical_graph():
     workflow = StateGraph(AgentState)
@@ -17,11 +30,11 @@ def build_medical_graph():
     planner = PlannerAgent()
     synthesizer = SynthesisAgent()
     reasoner = ReasoningAgent()
-    retriever = RetrievalAgent()
+
 
     #setup the graph nodes
     workflow.add_node("planner",planner)
-    workflow.add_node("retriever",retriever)
+    workflow.add_node("retrieve",enhanced_retrieve_node)
     workflow.add_node("reasoner",reasoner)
     workflow.add_node("synthesizer",synthesizer)
 
@@ -29,12 +42,13 @@ def build_medical_graph():
     workflow.set_entry_point("planner")
 
     #define edges for flow
-    workflow.add_edge("planner","retriever")
-    workflow.add_edge("retriever","reasoner")
+    workflow.add_edge("planner","retrieve")
+    workflow.add_edge("retrieve","reasoner")
     workflow.add_edge("reasoner","synthesizer")
     workflow.add_edge("synthesizer",END)
 
     return workflow.compile()
+
 
 #standalone testing
 if __name__ == "__main__":

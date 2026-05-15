@@ -1,12 +1,9 @@
 from langchain.tools import tool
 from typing import List, Dict, Any, Optional
-from pathlib import Path
-import sys
-sys.path.append(str(Path(__file__).parent.parent))
-from src.storage.vector_stores import VectorStoreManager
-from src.ingestion.embedder import MedicalEmbedder
-from src.config import settings
-from src.logger import get_logger
+from ..storage.vector_stores import VectorStoreManager  
+from ..ingestion.embedder import MedicalEmbedder  
+from ..config import settings  
+from ..logger import get_logger  
 
 logger  = get_logger(__name__)
 
@@ -34,8 +31,7 @@ def search_collection(query: str, collection_name:str, k:int=5)->List[Dict[str,A
     results = store.search(collection_name=collection_name,query=query,k=k)
 
     for r in results:
-        r['metadatas']['collection'] = collection_name
-    return results
+        r['metadata']['collection'] = collection_name  
 
 tools = [
     search_collection,

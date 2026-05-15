@@ -2,16 +2,16 @@ from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_ollama import ChatOllama
-import sys
-from pathlib import Path
+
+
 import json
 import os
 from dotenv import load_dotenv
-sys.path.append(str(Path(__file__).parent.parent))
-from src.config import settings
-from src.agents.state import AgentState, Plan
-from src.logger import get_logger
-from src.agents.system_prompt import get_sys_prompt_for_planner
+
+from ..config import settings  
+from ..agents.state import AgentState, Plan 
+from ..logger import get_logger  
+from ..agents.system_prompt import get_sys_prompt_for_planner 
 
 logger = get_logger(__name__)
 
@@ -51,8 +51,8 @@ class PlannerAgent:
                 p.setdefault("priority",1)
             return plans
         except Exception as e:
-            logger.info(f'Planner error: {e}\n Response: {response.content}')
-            return [{'query':user_query,'collections':["gale_encyclopedia", "daily_med", "pubmed_central"], "priority": 1}]
+            logger.error(f'Planner error: {e}\n Response: {response.content}')  
+            return [{"query":user_query,"collections":[settings.collection_gale, settings.collection_dailymed, settings.collection_pubmed], "priority": 1}]  
     def __call__(self, state: AgentState)->dict:
         plans = self.plan(state['user_query'])
         return {'plans':plans}
