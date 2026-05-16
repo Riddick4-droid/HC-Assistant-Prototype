@@ -1,4 +1,4 @@
-//chale i don't know html so i use deepseek 
+// chale i don't know html so i use deepseek 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -185,7 +185,8 @@
     </div>
 
     <script>
-        const API_URL = '/v1/chat';  // Adjust if your backend is on different port
+        const API_URL = '/v1/chat';
+        const HISTORY_URL = '/history';
         let sessionId = localStorage.getItem('sessionId');
         if (!sessionId) {
             sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -195,6 +196,32 @@
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
         const sendButton = document.getElementById('sendButton');
+
+        // Load conversation history on page load
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${HISTORY_URL}/${sessionId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Clear welcome message
+                    chatMessages.innerHTML = '';
+                    // Display each message
+                    for (const msg of data.history) {
+                        addMessage(msg.role, msg.content, null, false);
+                    }
+                    // If no history, show welcome
+                    if (data.history.length === 0) {
+                        addMessage('assistant', "Hello! I'm your medical assistant. I can answer questions about symptoms, medications, treatments, and medical research. Always consult a healthcare professional for medical advice.", null, false);
+                    }
+                } else {
+                    // Default welcome
+                    addMessage('assistant', "Hello! I'm your medical assistant. I can answer questions about symptoms, medications, treatments, and medical research. Always consult a healthcare professional for medical advice.", null, false);
+                }
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                addMessage('assistant', "Hello! I'm your medical assistant. I can answer questions about symptoms, medications, treatments, and medical research. Always consult a healthcare professional for medical advice.", null, false);
+            }
+        }
 
         function addMessage(role, content, citations = null, safetyAlert = false) {
             const messageDiv = document.createElement('div');
@@ -255,7 +282,6 @@
             chatInput.value = '';
             setLoading(true);
             
-            // Add a temporary "thinking" message
             const thinkingId = Date.now();
             const thinkingDiv = document.createElement('div');
             thinkingDiv.className = 'message assistant';
@@ -274,9 +300,7 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 
-                // Remove thinking message
                 document.getElementById(`thinking-${thinkingId}`)?.remove();
-                
                 addMessage('assistant', data.answer, data.citations, data.safety_alert);
             } catch (error) {
                 document.getElementById(`thinking-${thinkingId}`)?.remove();
@@ -291,6 +315,9 @@
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !sendButton.disabled) sendMessage();
         });
+
+        // Load history when page loads
+        loadHistory();
     </script>
 </body>
 </html>

@@ -27,10 +27,18 @@ class AgentState(TypedDict):
     next_node: Optional[str]
     messages: Annotated[List[Dict[str,str]],add_messages]
     graph_context: str
+    messages: Annotated[List[Dict[str, str]], add_messages]
 
-def create_initial_state(user_query:str, session_id: Optional[str]=None)->AgentState:
+def create_initial_state(user_query:str, 
+                         session_id: Optional[str]=None, 
+                         history: List[Dict]=None)->AgentState:
     global logger
     logger.info('Agent state created successfully. Running...')
+    messages = history or []
+
+    if not messages or messages[-1].get("content") != user_query:
+        messages.append({"role": "user", "content": user_query})
+
     return AgentState(
         user_query=user_query,
         session_id=session_id,
@@ -44,4 +52,5 @@ def create_initial_state(user_query:str, session_id: Optional[str]=None)->AgentS
         next_node=None,
         messages=[{"role": "user", "content": user_query}],
         graph_context=""
+        messages = messages
     )
