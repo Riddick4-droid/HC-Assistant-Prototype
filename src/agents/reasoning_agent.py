@@ -1,4 +1,5 @@
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
@@ -13,38 +14,40 @@ from ..logger import get_logger
 logger = get_logger(__name__)
 
 class ReasoningAgent:
-    """
-    Uses DeepSeek (or fallback) to perform step‑by‑step reasoning over retrieved chunks.
-    Outputs reasoned evidence that will be used by the synthesis agent.
-    """
     def __init__(self):
-        if settings.ollama_model:
-            from langchain_ollama import ChatOllama
-            self.llm = ChatOllama(
-            model = settings.ollama_model,
-            base_url = settings.ollama_base_url,
-            temperature = 0
-            )
-        #else:
-            #from langchain_openai import ChatOpenAI
-            #self.llm = ChatOpenAI(model="gpt-3.5-turbo",temperature=0)
+        self.llm = ChatOpenAI(
+            model=settings.openai_model,
+            temperature=0.2
+        )
+        self.system_prompt = """You are a medical reasoning engine. You are given a user query and a set of retrieved text chunks from medical knowledge bases. Your task is to reason step by step, citing evidence from the chunks, and produce a final reasoned analysis that answers the query.
 
-        self.sys_prompt = get_sys_prompt_for_reasoning()
+Guidelines:
+- Only use information present in the provided chunks.
+- If information is missing, state that explicitly.
+- Be cautious and avoid over‑confidence.
+- Number your reasoning steps.
+- At the end, provide a concise conclusion.
 
-    def reason(self,query:str, chunks:list)->str:
+Output format:
+Steps:
+1. ...
+2. ...
+Conclusion: ..."""
+    
+    def reason(self, query: str, chunks: list) -> str:
         context = "\n\n".join([f"[{i+1}] {chunk['text']}" for i, chunk in enumerate(chunks)])
-        user_prompt = f"user query: {query}\n\nRetrived context:\n{context}\n\nPlease reason step by step"
+        user_prompt = f"User query: {query}\n\nRetrieved context:\n{context}\n\nPlease reason step by step."
         messages = [
-            SystemMessage(content=self.sys_prompt),
+            SystemMessage(content=self.system_prompt),
             HumanMessage(content=user_prompt)
         ]
         response = self.llm.invoke(messages)
         return response.content
     
-    def __call__(self, state: AgentState)->dict:
-        reasoning = self.reason(state['user_query'], state['retrieved_chunks'])
+    def __call__(self, state: AgentState) -> dict:
+        reasoning = self.reason(state["user_query"], state["retrieved_chunks"])
         steps = [line for line in reasoning.split("\n") if line.strip().startswith(("1.", "2.", "3.", "4.", "5."))]
-        return {'reasoned_evidence':reasoning, 'reasoning_steps':steps}
+        return {"reasoned_evidence": reasoning, "reasoning_steps": steps}
 
 
 # Standalone test (requires retrieved_chunks)

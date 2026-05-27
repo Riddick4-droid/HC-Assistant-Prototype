@@ -16,73 +16,51 @@ load_dotenv()
 logger = get_logger(__name__)
 
 class SynthesisAgent:
-    """
-    Generates a final, user‑friendly answer with citations, using either OpenAI or DeepSeek.
-    """
     def __init__(self):
-        #use_openai = os.getenv('SYNTHESIS_MODEL','openai').lower() == 'openai'
-        #if use_openai and os.getenv('OPENAI_API_KEY'):
-            #self.llm = ChatOpenAI(model=os.getenv('OPENAI_MODEL','gpt-4o'),temperature=0.2)
-        if settings.ollama_model:
-            from langchain_ollama import ChatOllama
-            self.llm = ChatOllama(
-            model = settings.ollama_model,
-            base_url = settings.ollama_base_url,
-            temperature = 0.3
-            )
-        else:
-            raise RuntimeError('No LLM available for synthesis')
-    def synthesize(self,query:str, reasoned_evidence:str, chunks:list)->tuple[str,list]:
+        self.llm = ChatOpenAI(
+            model=settings.openai_model,
+            temperature=0.3
+        )
+    
+    def synthesize(self, query: str, reasoned_evidence: str, chunks: list) -> tuple[str, list]:
         citations = []
         for idx, chunk in enumerate(chunks[:5]):
-            meta = chunk.get('metadata',{})
+            meta = chunk.get("metadata", {})
             citation = {
-                "id":idx+1,
-                "text_snippet":chunk["text"][:150] + '...',
-                "source":meta.get("source","No grounding source"),
-                "collection":meta.get("collection","unnkown collection"),
+                "id": idx + 1,
+                "text_snippet": chunk["text"][:150] + "...",
+                "source": meta.get("source", "Unknown"),
+                "collection": meta.get("collection", "Unknown"),
                 "page": meta.get("page")
             }
             citations.append(citation)
-        sys_prompt = get_sys_prompt_for_synthesis()
+        
+        system_prompt = """You are a medical AI assistant. Based on the reasoned evidence and the retrieved chunks, provide a clear, accurate, and safe answer to the user's query. Include citations in the format [1], [2] etc. If the information is insufficient, say so. Never invent information. End with a disclaimer: 'Always consult a healthcare professional for medical advice.'"""
+        
         user_prompt = f"""User query: {query}
 
-                     Reasoned evidence:
-                    {reasoned_evidence}
+Reasoned evidence:
+{reasoned_evidence}
 
-                     Available chunks with citations:
-                    {chr(10).join([f"[{c['id']}] {c['text_snippet']}" for c in citations])}
+Available chunks with citations:
+{chr(10).join([f"[{c['id']}] {c['text_snippet']}" for c in citations])}
 
-            Now produce the final answer with appropriate citations."""
+Now produce the final answer with appropriate citations."""
+        
         messages = [
-            SystemMessage(content=sys_prompt),
+            SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt)
         ]
         response = self.llm.invoke(messages)
-        # FIX: Added response validation before returning
-        if not hasattr(response, 'content') or not response.content or not response.content.strip():
-            logger.error("LLM returned empty response")
-            return "I could not generate an answer. Please try again.", citations
         return response.content, citations
-    def __call__(self, state: AgentState)->dict:
-        # FIX: Added validation for required state data
-        if not state.get("retrieved_chunks"):
-            logger.warning("No retrieved chunks available for synthesis")
-            return {
-                "final_answer": "I don't have enough information to answer this question.",
-                "citations": []
-            }
-        
-        try:
-            answer, citations = self.synthesize(
-                state["user_query"],
-                state["reasoned_evidence"],
-                state["retrieved_chunks"]
-            )
-            return {"final_answer": answer, "citations":citations}
-        except Exception as e:
-            logger.error(f"Synthesis agent failed: {e}")
-            raise
+    
+    def __call__(self, state: AgentState) -> dict:
+        answer, citations = self.synthesize(
+            state["user_query"],
+            state["reasoned_evidence"],
+            state["retrieved_chunks"]
+        )
+        return {"final_answer": answer, "citations": citations}
     
 
 #standalone testing

@@ -27,7 +27,7 @@ class AgentState(TypedDict):
     next_node: Optional[str]
     messages: Annotated[List[Dict[str,str]],add_messages]
     graph_context: str
-    messages: Annotated[List[Dict[str, str]], add_messages]
+    # messages: Annotated[List[Dict[str, str]], add_messages]
 
 def create_initial_state(user_query:str, 
                          session_id: Optional[str]=None, 
@@ -50,7 +50,7 @@ def create_initial_state(user_query:str,
         citations=[],
         error=None,
         next_node=None,
-        messages=[{"role": "user", "content": user_query}],
-        graph_context=""
+        # messages=[{"role": "user", "content": user_query}],
+        graph_context="",
         messages = messages
     )

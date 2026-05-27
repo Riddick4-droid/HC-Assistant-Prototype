@@ -20,6 +20,7 @@ class VectorStoreManager:
         self.embedder = embedder
         self.collections = {} #caching
 
+    #gets or creates new collection in chromadb
     def get_collection(self,name:str):
         """get or create a collection by its name"""
         if name not in self.collections:

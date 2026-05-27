@@ -1,4 +1,10 @@
+##the ingestion pipeline includes the 
+
 import sys
+import io
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))

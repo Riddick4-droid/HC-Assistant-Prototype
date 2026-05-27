@@ -22,12 +22,12 @@ class HybridMedicalRetriever:
         )
         self.graph_store = Neo4jMedicalGraph()
 
-    def retrieve(self,query:str, k:int=5,use_graph:bool=True)->Dict[str,Any]:
+    def retrieve(self,query:str, k:int=5, use_graph:bool=True)->Dict[str,Any]:
         """
         Retrieve relevant context using hybrid approach.
         Returns: {"chunks": [...], "graph_context": "...", "citations": [...]}
         """
-        #vector search for semantically similar chunks
+        #vector search for semantically similar chunks with top_k=5
         vector_results = self._vector_search(query,k)
 
         #extract entities from query and search graph
@@ -40,7 +40,8 @@ class HybridMedicalRetriever:
             "graph_context":graph_context,
             "citations":self._build_citations(vector_results)
         }
-    def _vector_search(self,query:str,k:int)->List[Dict]:
+    
+    def _vector_search(self, query:str, k:int)->List[Dict]:
          """Search across all medical collections."""
          all_results = []
          collections = [settings.collection_dailymed,settings.collection_gale,settings.collection_pubmed]
@@ -56,6 +57,7 @@ class HybridMedicalRetriever:
                  seen.add(r["text"])
                  unique.append(r)
          return unique[:k]
+    
     def _graph_search(self,query:str, vector_results:List[Dict])->str:
         """Extract entities from query and vector results, then traverse graph"""
         try:

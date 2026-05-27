@@ -1,3 +1,7 @@
+#note that:  you need actual pdf links to download the data from the sources
+#this demonstrates how to perform the data extraction from the sources
+#check the settings module if you want to modify the destination of files stored.
+
 import urllib.request
 from pathlib import Path
 import sys
@@ -13,11 +17,12 @@ logger = get_logger(__name__)
 
 # List of open‑access medical PDFs from PubMed Central (real examples)
 # These are small, safe, and publicly available
-PMC_SAMPLES = {
-    "gale_like": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7717717/pdf/medi-99-e22452.pdf",   # COVID-19 article
-    "dailymed_like": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7124014/pdf/978-981-13-6689-5_Chapter_8.pdf", # Vitamin D
-    "pubmed_central": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8136423/pdf/mm7020e1.pdf", # Long COVID
+PDF_SOURCES = {
+    "gale_like": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "dailymed_like": "https://www.africau.edu/images/default/sample.pdf",
+    "pubmed_central": "https://arxiv.org/pdf/2301.07041.pdf",  # real medical-like paper
 }
+
 
 def download_file(url:str, dest:Path):
     global logger
@@ -37,9 +42,9 @@ def download_file(url:str, dest:Path):
 def main():
     #create raw data dir
     global logger 
-    settings.data_raw_dir.mkdir(parents=True,exist_ok=True)
+    settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
 
-    for source, url in  PMC_SAMPLES.items():
+    for source, url in  PDF_SOURCES.items():
         dest = settings.data_raw_dir/ f"{source}.pdf"
         download_file(url,dest)
     logger.info(f"\n Sample medical PDFs downloaded to: {settings.data_raw_dir}")

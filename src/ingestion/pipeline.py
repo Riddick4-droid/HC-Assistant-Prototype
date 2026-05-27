@@ -16,6 +16,7 @@ class IngestionPipeline:
     Multi-source ingestion pipeline using LandingAI ADE.
     Routes documents to appropriate Chroma collections based on source.
     """
+    #this is where the raw data is and needs to be parsered, embedded and ingested 
     SOURCE_TO_COLLECTION =  {
         "gale": settings.collection_gale,
         "dailymed": settings.collection_dailymed,
@@ -24,7 +25,7 @@ class IngestionPipeline:
 
     def __init__(self):
         global logger
-        self.parser = ADEParser()
+        self.parser = ADEParser() #initializes the ADE parser-if failure check your quota
         self.embedder = MedicalEmbedder(settings.embedding_model)
         self.store = VectorStoreManager(persist_dir=str(settings.chroma_persist_dir),
                                         embedder=self.embedder)
@@ -51,20 +52,21 @@ class IngestionPipeline:
         logger.info(f'Added chunks to Chroma: {len(chunks)}')
 
          # Graph extraction
-        for chunk in chunks:
-            try:
-                extraction = self.extractor.extract_from_chunk(
-                    chunk_text=chunk["text"],
-                    chunk_metadata={"source": file_path.name, "page": chunk.get("page")}
-                )
-                if extraction.get("nodes") or extraction.get("relationships"):
-                    self.graph_store.ingest_entities(extraction)
-                    logger.debug(f"Added {len(extraction.get('nodes', []))} nodes and "
-                             f"{len(extraction.get('relationships', []))} relationships from chunk")
-                else:
-                    logger.debug("No entities extracted from chunk")
-            except Exception as e:
-                logger.error(f"Graph extraction failed for chunk: {e}")
+        # if settings.enable_graph_extraction:
+        #     for chunk in chunks:
+        #         try:
+        #             extraction = self.extractor.extract_from_chunk(
+        #                 chunk_text=chunk["text"],
+        #                 chunk_metadata={"source": file_path.name, "page": chunk.get("page")}
+        #             )
+        #             if extraction.get("nodes") or extraction.get("relationships"):
+        #                 self.graph_store.ingest_entities(extraction)
+        #                 logger.debug(f"Added {len(extraction.get('nodes', []))} nodes and "
+        #                      f"{len(extraction.get('relationships', []))} relationships from chunk")
+        #             else:
+        #                 logger.debug("No entities extracted from chunk")
+        #         except Exception as e:
+        #             logger.error(f"Graph extraction failed for chunk: {e}")
 
         logger.info(f'Finished ingestion for {file_path.name}')
         return len(chunks)

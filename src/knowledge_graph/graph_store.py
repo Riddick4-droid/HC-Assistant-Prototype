@@ -4,6 +4,8 @@ from ..config import settings
 from ..logger import get_logger  
 from ..knowledge_graph.schema import CONSTRAINT_QUERIES  
 
+import sys
+
 logger = get_logger(__name__)
 
 class Neo4jMedicalGraph:
@@ -49,7 +51,11 @@ class Neo4jMedicalGraph:
     def ingest_entities(self,extraction:Dict):
         """Bulk insert nodes and relationships from extraction output"""
         for node in extraction.get("nodes",[]):
-            self.add_node(node["id"],node["node_type"],node.get("properties",{}))
+            # node_type = node.gett("type") or node.get("node_type")
+            node_type = node.get("type") or node.get("node_type")
+            if not node_type:
+                continue
+            self.add_node(node["id"],node_type,node.get("properties",{}))
         for rel in extraction.get("relationships",[]):
     
             self.add_relationship(rel["source"],rel["target"],rel["type"],rel.get("properties"))  
